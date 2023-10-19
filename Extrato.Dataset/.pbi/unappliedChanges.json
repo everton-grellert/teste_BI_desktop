@@ -1,0 +1,125 @@
+{
+  "version": "1.0",
+  "conceptualSchemaSettings": {},
+  "queries": [
+    {
+      "name": "Nubank",
+      "lineageTag": "4167e8b3-d426-4532-99dd-7edacc9a67e7",
+      "navigationStepName": "Navegação",
+      "text": [
+        "let",
+        "    Fonte = Folder.Files(\"G:\\Meu Drive\\Nubank\"),",
+        "    #\"Linhas Filtradas\" = Table.SelectRows(Fonte, each ([Extension] = \".csv\")),",
+        "    #\"Arquivos Ocultos Filtrados1\" = Table.SelectRows(#\"Linhas Filtradas\", each [Attributes]?[Hidden]? <> true),",
+        "    #\"Invocar Função Personalizada1\" = Table.AddColumn(#\"Arquivos Ocultos Filtrados1\", \"Transformar Arquivo\", each #\"Transformar Arquivo\"([Content])),",
+        "    #\"Colunas Renomeadas1\" = Table.RenameColumns(#\"Invocar Função Personalizada1\", {\"Name\", \"Nome da Origem\"}),",
+        "    #\"Outras Colunas Removidas1\" = Table.SelectColumns(#\"Colunas Renomeadas1\", {\"Nome da Origem\", \"Transformar Arquivo\"}),",
+        "    #\"Coluna de Tabela Expandida1\" = Table.ExpandTableColumn(#\"Outras Colunas Removidas1\", \"Transformar Arquivo\", Table.ColumnNames(#\"Transformar Arquivo\"(#\"Arquivo de Amostra\"))),",
+        "    #\"Tipo Alterado\" = Table.TransformColumnTypes(#\"Coluna de Tabela Expandida1\",{{\"Nome da Origem\", type text}, {\"Data\", type date}, {\"Valor\", type number}, {\"Identificador\", type text}, {\"Descrição\", type text}}),",
+        "    #\"Duplicatas Removidas\" = Table.Distinct(#\"Tipo Alterado\", {\"Identificador\"}),",
+        "    #\"Dividir Coluna por Delimitador\" = Table.SplitColumn(#\"Duplicatas Removidas\", \"Descrição\", Splitter.SplitTextByEachDelimiter({\"-\"}, QuoteStyle.Csv, false), {\"Descrição.1\", \"Descrição.2\"}),",
+        "    #\"Tipo Alterado1\" = Table.TransformColumnTypes(#\"Dividir Coluna por Delimitador\",{{\"Descrição.1\", type text}, {\"Descrição.2\", type text}}),",
+        "    #\"Colunas Renomeadas\" = Table.RenameColumns(#\"Tipo Alterado1\",{{\"Descrição.1\", \"Tipo de Transacao\"}}),",
+        "    #\"Texto Aparado\" = Table.TransformColumns(#\"Colunas Renomeadas\",{{\"Tipo de Transacao\", Text.Trim, type text}}),",
+        "    #\"Valor Substituído2\" = Table.ReplaceValue(#\"Texto Aparado\",\" ANALYTICS BUSINESS I - 35.715.967/0001-34 - BANCO INTER (0077) Agência: 1 Conta: 4692067-6\",\"Salário\",Replacer.ReplaceText,{\"Descrição.2\"}),",
+        "    #\"Valor Substituído\" = Table.ReplaceValue(#\"Valor Substituído2\",\" PABLO ROBERTO BRAVO - 35.715.967/0001-34 - BANCO INTER (0077) Agência: 1 Conta: 4692067-6\",\"Salário\",Replacer.ReplaceText,{\"Descrição.2\"}),",
+        "    #\"Linhas Filtradas1\" = Table.SelectRows(#\"Valor Substituído\", each ([Nome da Origem] <> \"NU_71985546_01SET2022_30SET2022.csv\")),",
+        "    #\"Valor Substituído1\" = Table.ReplaceValue(#\"Linhas Filtradas1\",\" ARMAZEM PARAISO - 90.958.489/0001-00 - ITAÚ UNIBANCO S.A. (0341) Agência: 9225 Conta: 99857-5\",\"Supermercado Paraiso\",Replacer.ReplaceText,{\"Descrição.2\"}),",
+        "    #\"Valor Substituído3\" = Table.ReplaceValue(#\"Valor Substituído1\",\" Uber - 17.895.646/0001-87 - EBANX IP LTDA. Agência: 1 Conta: 1000752180-1\",\"Uber\",Replacer.ReplaceText,{\"Descrição.2\"}),",
+        "    #\"Coluna Condicional Adicionada\" = Table.AddColumn(#\"Valor Substituído3\", \"Personalizar\", each if Text.Contains([Descrição.2], \"99*\") then \"UBER/99\" else if Text.Contains([Descrição.2], \"Ifd*\") then \"Ifood\" else if Text.Contains([Descrição.2], \"FILHOS ADM E INTERM\") then \"Aluguel\" else if Text.Contains([Descrição.2], \"Ifood\") then \"Ifood\" else if Text.Contains([Descrição.2], \"Lanche\") then \"Ifood\" else if Text.Contains([Descrição.2], \"Haus\") then \"Ifood\" else if Text.Contains([Descrição.2], \"CEEE\") then \"Energia Elétrica\" else if Text.Contains([Descrição.2], \"CLARO\") then \"Claro\" else if Text.Contains([Descrição.2], \"Supermercado\") then \"Supermercado\" else if Text.Contains([Descrição.2], \"Burger King\") then \"Ifood\" else if Text.Contains([Descrição.2], \"Cineflix\") then \"Lazer\" else if Text.Contains([Descrição.2], \"Pag*Galpao\") then \"Lazer\" else if Text.Contains([Descrição.2], \"Teia Ecologica\") then \"Ifood\" else if Text.Contains([Descrição.2], \"Diade\") then \"Ifood\" else if Text.Contains([Descrição.2], \"Ebw*Spotify\") then \"Streaming\" else if Text.Contains([Descrição.2], \"Amazonprimebr\") then \"Streaming\" else if Text.Contains([Descrição.2], \"Riachuelo\") then \"Roupas\" else if Text.Contains([Descrição.2], \"Mk Pelotas Shopping\") then \"Ifood\" else if Text.Contains([Descrição.2], \"Padaria Alecrim\") then \"Ifood\" else if Text.Contains([Descrição.2], \"Nacional Lobo da Costa\") then \"Supermercado\" else if Text.Contains([Descrição.2], \"Ferragem Etc e Tal\") then \"Ferragem\" else if Text.Contains([Descrição.2], \"Panvel\") then \"Farmácia\" else if Text.Contains([Descrição.2], \"Avicola Carve\") then \"Gatos\" else if Text.Contains([Descrição.2], \"Dom Pastelo\") then \"Ifood\" else if Text.Contains([Descrição.2], \"Petz\") then \"Gatos\" else if Text.Contains([Descrição.2], \"Salário\") then \"Salário\" else if Text.Contains([Descrição.2], \"Uber\") then \"UBER/99\" else if Text.Contains([Descrição.2], \"15.436.940/0001-03\") then \"Compras\" else if Text.Contains([Descrição.2], \"38.372.267/0001-82\") then \"Compras\" else if Text.Contains([Descrição.2], \"00.394.460/0058-87\") then \"MEI\" else if Text.Contains([Descrição.2], \"Sympla\") then \"Lazer\" else if Text.Contains([Descrição.2], \"Breno grellert\") then \"Contas Cartão Pai\" else if Text.Contains([Descrição.2], \"Consorcio de Transport\") then \"Ônibus\" else if Text.Contains([Descrição.2], \"CIA ESTADUAL\") then \"Energia Elétrica\" else if Text.Contains([Descrição.2], \"BANCO PAN SA\") then \"Reneg. Pan\" else if Text.Contains([Descrição.2], \"PANVEL\") then \"Farmácia\" else if Text.Contains([Descrição.2], \"RUDI BONOW\") then \"Supermercado\" else if Text.Contains([Descrição.2], \"FERRAGEM\") then \"Ferragem\" else if Text.Contains([Descrição.2], \"Dom Netto\") then \"Ifood\" else if Text.Contains([Descrição.2], \"ISAIR CARDOSO\") then \"Supermercado\" else \"Outros\"),",
+        "    #\"Linhas Filtradas4\" = Table.SelectRows(#\"Coluna Condicional Adicionada\", each ([Tipo de Transacao] <> \"Valor Mensal Programado\")),",
+        "    #\"Linhas Filtradas2\" = Table.SelectRows(#\"Linhas Filtradas4\", each ([Tipo de Transacao] <> \"Aplicação Fundo\" and [Tipo de Transacao] <> \"Resgate Fundo\")),",
+        "    #\"Erros Substituídos\" = Table.ReplaceErrorValues(#\"Linhas Filtradas2\", {{\"Personalizar\", \"Outros\"}}),",
+        "    #\"Tipo Alterado2\" = Table.TransformColumnTypes(#\"Erros Substituídos\",{{\"Valor\", type number}}),",
+        "    #\"Tipo Alterado3\" = Table.TransformColumnTypes(#\"Tipo Alterado2\",{{\"Personalizar\", type text}}),",
+        "    #\"Personalização Adicionada\" = Table.AddColumn(#\"Tipo Alterado3\", \"Personalizar.1\", each [Valor]/100),",
+        "    #\"Tipo Alterado4\" = Table.TransformColumnTypes(#\"Personalização Adicionada\",{{\"Personalizar.1\", Currency.Type}}),",
+        "    #\"Colunas Renomeadas2\" = Table.RenameColumns(#\"Tipo Alterado4\",{{\"Personalizar.1\", \"Valor Transacao\"}}),",
+        "    #\"Colunas Removidas\" = Table.RemoveColumns(#\"Colunas Renomeadas2\",{\"Valor\"}),",
+        "    #\"Colunas Reordenadas\" = Table.ReorderColumns(#\"Colunas Removidas\",{\"Nome da Origem\", \"Identificador\", \"Data\", \"Tipo de Transacao\", \"Descrição.2\", \"Personalizar\", \"Valor Transacao\"})",
+        "in",
+        "    #\"Colunas Reordenadas\""
+      ],
+      "isDirectQuery": false,
+      "lastLoadedAsTableFormulaText": "{\"IncludesReferencedQueries\":false,\"RootFormulaText\":\"let\\n    Fonte = Folder.Files(\\\"G:\\\\Meu Drive\\\\Nubank\\\"),\\n    #\\\"Linhas Filtradas\\\" = Table.SelectRows(Fonte, each ([Extension] = \\\".csv\\\")),\\n    #\\\"Arquivos Ocultos Filtrados1\\\" = Table.SelectRows(#\\\"Linhas Filtradas\\\", each [Attributes]?[Hidden]? <> true),\\n    #\\\"Invocar Função Personalizada1\\\" = Table.AddColumn(#\\\"Arquivos Ocultos Filtrados1\\\", \\\"Transformar Arquivo\\\", each #\\\"Transformar Arquivo\\\"([Content])),\\n    #\\\"Colunas Renomeadas1\\\" = Table.RenameColumns(#\\\"Invocar Função Personalizada1\\\", {\\\"Name\\\", \\\"Nome da Origem\\\"}),\\n    #\\\"Outras Colunas Removidas1\\\" = Table.SelectColumns(#\\\"Colunas Renomeadas1\\\", {\\\"Nome da Origem\\\", \\\"Transformar Arquivo\\\"}),\\n    #\\\"Coluna de Tabela Expandida1\\\" = Table.ExpandTableColumn(#\\\"Outras Colunas Removidas1\\\", \\\"Transformar Arquivo\\\", Table.ColumnNames(#\\\"Transformar Arquivo\\\"(#\\\"Arquivo de Amostra\\\"))),\\n    #\\\"Tipo Alterado\\\" = Table.TransformColumnTypes(#\\\"Coluna de Tabela Expandida1\\\",{{\\\"Nome da Origem\\\", type text}, {\\\"Data\\\", type date}, {\\\"Valor\\\", type number}, {\\\"Identificador\\\", type text}, {\\\"Descrição\\\", type text}}),\\n    #\\\"Duplicatas Removidas\\\" = Table.Distinct(#\\\"Tipo Alterado\\\", {\\\"Identificador\\\"}),\\n    #\\\"Dividir Coluna por Delimitador\\\" = Table.SplitColumn(#\\\"Duplicatas Removidas\\\", \\\"Descrição\\\", Splitter.SplitTextByEachDelimiter({\\\"-\\\"}, QuoteStyle.Csv, false), {\\\"Descrição.1\\\", \\\"Descrição.2\\\"}),\\n    #\\\"Tipo Alterado1\\\" = Table.TransformColumnTypes(#\\\"Dividir Coluna por Delimitador\\\",{{\\\"Descrição.1\\\", type text}, {\\\"Descrição.2\\\", type text}}),\\n    #\\\"Colunas Renomeadas\\\" = Table.RenameColumns(#\\\"Tipo Alterado1\\\",{{\\\"Descrição.1\\\", \\\"Tipo de Transacao\\\"}}),\\n    #\\\"Texto Aparado\\\" = Table.TransformColumns(#\\\"Colunas Renomeadas\\\",{{\\\"Tipo de Transacao\\\", Text.Trim, type text}}),\\n    #\\\"Valor Substituído2\\\" = Table.ReplaceValue(#\\\"Texto Aparado\\\",\\\" ANALYTICS BUSINESS I - 35.715.967/0001-34 - BANCO INTER (0077) Agência: 1 Conta: 4692067-6\\\",\\\"Salário\\\",Replacer.ReplaceText,{\\\"Descrição.2\\\"}),\\n    #\\\"Valor Substituído\\\" = Table.ReplaceValue(#\\\"Valor Substituído2\\\",\\\" PABLO ROBERTO BRAVO - 35.715.967/0001-34 - BANCO INTER (0077) Agência: 1 Conta: 4692067-6\\\",\\\"Salário\\\",Replacer.ReplaceText,{\\\"Descrição.2\\\"}),\\n    #\\\"Linhas Filtradas1\\\" = Table.SelectRows(#\\\"Valor Substituído\\\", each ([Nome da Origem] <> \\\"NU_71985546_01SET2022_30SET2022.csv\\\")),\\n    #\\\"Valor Substituído1\\\" = Table.ReplaceValue(#\\\"Linhas Filtradas1\\\",\\\" ARMAZEM PARAISO - 90.958.489/0001-00 - ITAÚ UNIBANCO S.A. (0341) Agência: 9225 Conta: 99857-5\\\",\\\"Supermercado Paraiso\\\",Replacer.ReplaceText,{\\\"Descrição.2\\\"}),\\n    #\\\"Valor Substituído3\\\" = Table.ReplaceValue(#\\\"Valor Substituído1\\\",\\\" Uber - 17.895.646/0001-87 - EBANX IP LTDA. Agência: 1 Conta: 1000752180-1\\\",\\\"Uber\\\",Replacer.ReplaceText,{\\\"Descrição.2\\\"}),\\n    #\\\"Coluna Condicional Adicionada\\\" = Table.AddColumn(#\\\"Valor Substituído3\\\", \\\"Personalizar\\\", each if Text.Contains([Descrição.2], \\\"99*\\\") then \\\"UBER/99\\\" else if Text.Contains([Descrição.2], \\\"Ifd*\\\") then \\\"Ifood\\\" else if Text.Contains([Descrição.2], \\\"FILHOS ADM E INTERM\\\") then \\\"Aluguel\\\" else if Text.Contains([Descrição.2], \\\"Ifood\\\") then \\\"Ifood\\\" else if Text.Contains([Descrição.2], \\\"Lanche\\\") then \\\"Ifood\\\" else if Text.Contains([Descrição.2], \\\"Haus\\\") then \\\"Ifood\\\" else if Text.Contains([Descrição.2], \\\"CEEE\\\") then \\\"Energia Elétrica\\\" else if Text.Contains([Descrição.2], \\\"CLARO\\\") then \\\"Claro\\\" else if Text.Contains([Descrição.2], \\\"Supermercado\\\") then \\\"Supermercado\\\" else if Text.Contains([Descrição.2], \\\"Burger King\\\") then \\\"Ifood\\\" else if Text.Contains([Descrição.2], \\\"Cineflix\\\") then \\\"Lazer\\\" else if Text.Contains([Descrição.2], \\\"Pag*Galpao\\\") then \\\"Lazer\\\" else if Text.Contains([Descrição.2], \\\"Teia Ecologica\\\") then \\\"Ifood\\\" else if Text.Contains([Descrição.2], \\\"Diade\\\") then \\\"Ifood\\\" else if Text.Contains([Descrição.2], \\\"Ebw*Spotify\\\") then \\\"Streaming\\\" else if Text.Contains([Descrição.2], \\\"Amazonprimebr\\\") then \\\"Streaming\\\" else if Text.Contains([Descrição.2], \\\"Riachuelo\\\") then \\\"Roupas\\\" else if Text.Contains([Descrição.2], \\\"Mk Pelotas Shopping\\\") then \\\"Ifood\\\" else if Text.Contains([Descrição.2], \\\"Padaria Alecrim\\\") then \\\"Ifood\\\" else if Text.Contains([Descrição.2], \\\"Nacional Lobo da Costa\\\") then \\\"Supermercado\\\" else if Text.Contains([Descrição.2], \\\"Ferragem Etc e Tal\\\") then \\\"Ferragem\\\" else if Text.Contains([Descrição.2], \\\"Panvel\\\") then \\\"Farmácia\\\" else if Text.Contains([Descrição.2], \\\"Avicola Carve\\\") then \\\"Gatos\\\" else if Text.Contains([Descrição.2], \\\"Dom Pastelo\\\") then \\\"Ifood\\\" else if Text.Contains([Descrição.2], \\\"Petz\\\") then \\\"Gatos\\\" else if Text.Contains([Descrição.2], \\\"Salário\\\") then \\\"Salário\\\" else if Text.Contains([Descrição.2], \\\"Uber\\\") then \\\"UBER/99\\\" else if Text.Contains([Descrição.2], \\\"15.436.940/0001-03\\\") then \\\"Compras\\\" else if Text.Contains([Descrição.2], \\\"38.372.267/0001-82\\\") then \\\"Compras\\\" else if Text.Contains([Descrição.2], \\\"00.394.460/0058-87\\\") then \\\"MEI\\\" else if Text.Contains([Descrição.2], \\\"Sympla\\\") then \\\"Lazer\\\" else if Text.Contains([Descrição.2], \\\"Breno grellert\\\") then \\\"Contas Cartão Pai\\\" else if Text.Contains([Descrição.2], \\\"Consorcio de Transport\\\") then \\\"Ônibus\\\" else if Text.Contains([Descrição.2], \\\"CIA ESTADUAL\\\") then \\\"Energia Elétrica\\\" else if Text.Contains([Descrição.2], \\\"BANCO PAN SA\\\") then \\\"Reneg. Pan\\\" else if Text.Contains([Descrição.2], \\\"PANVEL\\\") then \\\"Farmácia\\\" else if Text.Contains([Descrição.2], \\\"RUDI BONOW\\\") then \\\"Supermercado\\\" else if Text.Contains([Descrição.2], \\\"FERRAGEM\\\") then \\\"Ferragem\\\" else if Text.Contains([Descrição.2], \\\"Dom Netto\\\") then \\\"Ifood\\\" else if Text.Contains([Descrição.2], \\\"ISAIR CARDOSO\\\") then \\\"Supermercado\\\" else \\\"Outros\\\"),\\n    #\\\"Linhas Filtradas4\\\" = Table.SelectRows(#\\\"Coluna Condicional Adicionada\\\", each ([Tipo de Transacao] <> \\\"Valor Mensal Programado\\\")),\\n    #\\\"Linhas Filtradas2\\\" = Table.SelectRows(#\\\"Linhas Filtradas4\\\", each ([Tipo de Transacao] <> \\\"Aplicação Fundo\\\" and [Tipo de Transacao] <> \\\"Resgate Fundo\\\")),\\n    #\\\"Erros Substituídos\\\" = Table.ReplaceErrorValues(#\\\"Linhas Filtradas2\\\", {{\\\"Personalizar\\\", \\\"Outros\\\"}}),\\n    #\\\"Tipo Alterado2\\\" = Table.TransformColumnTypes(#\\\"Erros Substituídos\\\",{{\\\"Valor\\\", type number}}),\\n    #\\\"Tipo Alterado3\\\" = Table.TransformColumnTypes(#\\\"Tipo Alterado2\\\",{{\\\"Personalizar\\\", type text}}),\\n    #\\\"Personalização Adicionada\\\" = Table.AddColumn(#\\\"Tipo Alterado3\\\", \\\"Personalizar.1\\\", each [Valor]/100),\\n    #\\\"Tipo Alterado4\\\" = Table.TransformColumnTypes(#\\\"Personalização Adicionada\\\",{{\\\"Personalizar.1\\\", Currency.Type}}),\\n    #\\\"Colunas Renomeadas2\\\" = Table.RenameColumns(#\\\"Tipo Alterado4\\\",{{\\\"Personalizar.1\\\", \\\"Valor Transacao\\\"}}),\\n    #\\\"Colunas Removidas\\\" = Table.RemoveColumns(#\\\"Colunas Renomeadas2\\\",{\\\"Valor\\\"}),\\n    #\\\"Colunas Reordenadas\\\" = Table.ReorderColumns(#\\\"Colunas Removidas\\\",{\\\"Nome da Origem\\\", \\\"Identificador\\\", \\\"Data\\\", \\\"Tipo de Transacao\\\", \\\"Descrição.2\\\", \\\"Personalizar\\\", \\\"Valor Transacao\\\"})\\nin\\n    #\\\"Colunas Reordenadas\\\"\",\"ReferencedQueriesFormulaText\":{}}",
+      "loadAsTableDisabled": false,
+      "resultType": "Table",
+      "isHidden": false
+    },
+    {
+      "name": "Arquivo de Amostra",
+      "lineageTag": "8cfc4b6d-d9fe-4b56-933d-c831d0e58f88",
+      "queryGroupId": "e0cd9908-dda5-4442-9cfc-db1c563d555b",
+      "text": [
+        "let",
+        "    Fonte = Folder.Files(\"G:\\Meu Drive\\Nubank\"),",
+        "    #\"Linhas Filtradas\" = Table.SelectRows(Fonte, each ([Extension] = \".csv\")),",
+        "    Navegação1 = #\"Linhas Filtradas\"{0}[Content]",
+        "in",
+        "    Navegação1"
+      ],
+      "loadAsTableDisabled": true,
+      "resultType": "Binary",
+      "isHidden": false
+    },
+    {
+      "name": "Parâmetro1",
+      "lineageTag": "84839087-bb25-4592-8092-49557e72b559",
+      "queryGroupId": "e0cd9908-dda5-4442-9cfc-db1c563d555b",
+      "text": [
+        "#\"Arquivo de Amostra\" meta [IsParameterQuery=true, BinaryIdentifier=#\"Arquivo de Amostra\", Type=\"Binary\", IsParameterQueryRequired=true]"
+      ],
+      "loadAsTableDisabled": true,
+      "resultType": "Binary",
+      "isHidden": false
+    },
+    {
+      "name": "Transformar o Arquivo de Exemplo",
+      "lineageTag": "dc416641-fbe7-481a-915f-f56f141fe10e",
+      "queryGroupId": "49dc9e1b-4501-46e3-821f-8775a2bbe043",
+      "text": [
+        "let",
+        "    Fonte = Csv.Document(Parâmetro1,[Delimiter=\",\", Columns=4, Encoding=65001, QuoteStyle=QuoteStyle.None]),",
+        "    #\"Cabeçalhos Promovidos\" = Table.PromoteHeaders(Fonte, [PromoteAllScalars=true])",
+        "in",
+        "    #\"Cabeçalhos Promovidos\""
+      ],
+      "loadAsTableDisabled": true,
+      "resultType": "Table",
+      "isHidden": false
+    },
+    {
+      "name": "Transformar Arquivo",
+      "lineageTag": "ce140c09-9333-4c5c-b798-7dc5b61be12f",
+      "queryGroupId": "e0cd9908-dda5-4442-9cfc-db1c563d555b",
+      "text": [
+        "let",
+        "    Fonte = (Parâmetro1 as binary) => let",
+        "    Fonte = Csv.Document(Parâmetro1,[Delimiter=\",\", Columns=4, Encoding=65001, QuoteStyle=QuoteStyle.None]),",
+        "    #\"Cabeçalhos Promovidos\" = Table.PromoteHeaders(Fonte, [PromoteAllScalars=true])",
+        "in",
+        "    #\"Cabeçalhos Promovidos\"",
+        "in",
+        "    Fonte"
+      ],
+      "loadAsTableDisabled": true,
+      "resultType": "Function",
+      "isHidden": false
+    }
+  ],
+  "queryGroups": [
+    {
+      "name": "Transformar Arquivo de Nubank",
+      "id": "49dc9e1b-4501-46e3-821f-8775a2bbe043",
+      "description": ""
+    },
+    {
+      "name": "Consultas Auxiliares",
+      "id": "e0cd9908-dda5-4442-9cfc-db1c563d555b",
+      "description": "",
+      "parentId": "49dc9e1b-4501-46e3-821f-8775a2bbe043"
+    }
+  ],
+  "culture": "pt-BR",
+  "firewallEnabled": true
+}
