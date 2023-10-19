@@ -283,7 +283,7 @@
                 "value": "{\"currencyCulture\":\"pt-BR\"}"
               }
             ],
-            "expression": "SUM(Nubank[Valor Transacao])",
+            "expression": "AVERAGE(Nubank[Valor Transacao])+35",
             "formatString": "\"R$\"\\ #,0.###############;-\"R$\"\\ #,0.###############;\"R$\"\\ #,0.###############",
             "lineageTag": "b5d5fc58-02b1-4b88-a953-d1a6ed3665b6"
           }
